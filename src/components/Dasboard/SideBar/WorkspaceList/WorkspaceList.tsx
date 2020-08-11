@@ -13,6 +13,8 @@ import FIDialog from "../../../Dialog/Dialoag";
 import { PROJECT_ACTIONS } from "../../../Project/constants";
 import ProjectList from "../ProjectList/ProjectList";
 import { GET_WORKSPACES_BY_ORG } from "../../../../graphql/queries/index";
+import { useDashBoardData, useDashboardDispatch } from "../../../../contexts/dashboardContext";
+import { setActiveWorkSpace } from "../../../../reducers/dashboardReducer";
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
@@ -63,76 +65,46 @@ function AddProject({ workspace }: { workspace: any }) {
 	);
 }
 
-export default function WorkspaceList({ organisation }: { organisation: any }) {
+export default function WorkspaceList() {
 	const classes = useStyles();
 	const [anchorEl, setAnchorEl] = React.useState<any>([]);
-	const filter: any = { filter: organisation };
-	const [menuList, setMenuList] = React.useState<any>([
-		{ children: <MenuItem>Edit Workspace </MenuItem> },
-	]);
+	const dashboardData = useDashBoardData();
+	const dispatch = useDashboardDispatch();
+	const filter: any = { filter: dashboardData?.organisation };
 	const { data, loading, error } = useQuery(GET_WORKSPACES_BY_ORG, filter);
-	React.useEffect(() => {
-		if (data && data.orgWorkspaces) {
-			console.log(data);
-			let array = [...menuList, { children: <AddProject workspace={data.orgWorkspaces} /> }];
-			setMenuList([...array]);
-		}
-	}, [data]);
-
-	const handleClick = (event: React.MouseEvent<HTMLButtonElement>, index: any) => {
-		let array = [...anchorEl];
-		array[index] = event.currentTarget;
-		setAnchorEl(array);
-	};
-
-	const handleClose = (index: any) => {
-		let array = [...anchorEl];
-		array[index] = null;
-		setAnchorEl(array);
-	};
+	if (loading) return null;
 
 	return (
 		<List className={classes.workspace}>
-			{data &&
-				data.orgWorkspaces &&
-				data.orgWorkspaces.map((workspace: any, index: number) => {
-					return (
-						<ListItem className={classes.workspaceList}>
-							<Box display="flex">
-								<Box flexGrow={1}>
-									<ListItemText
-										primary={workspace.name}
-										className={classes.workspaceListText}
-									/>
-								</Box>
-								<Box>
-									<IconButton
-										className={classes.workspaceEditIcon}
-										aria-controls={`projectmenu${index}`}
-										aria-haspopup="true"
-										onClick={(e) => {
-											handleClick(e, index);
-										}}
-									>
-										<EditOutlinedIcon fontSize="small" />
-									</IconButton>
-									{menuList && (
-										<SimpleMenu
-											handleClose={() => handleClose(index)}
-											id={`projectmenu${index}`}
-											anchorEl={anchorEl[index]}
-											menuList={menuList}
-										/>
-									)}
-								</Box>
+			{data.orgWorkspaces.map((workspace: any, index: number) => {
+				return (
+					<ListItem key={index} className={classes.workspaceList}>
+						<Box display="flex">
+							<Box flexGrow={1}>
+								<ListItemText
+									primary={workspace.name}
+									className={classes.workspaceListText}
+								/>
 							</Box>
-							<List>
-								<ProjectList workspaceId={workspace.id} />
-							</List>
-							<Divider />
-						</ListItem>
-					);
-				})}
+							<Box>
+								<IconButton
+									onClick={() => {
+										dispatch(setActiveWorkSpace(workspace));
+									}}
+									className={classes.workspaceEditIcon}
+									aria-haspopup="true"
+								>
+									<EditOutlinedIcon fontSize="small" />
+								</IconButton>
+							</Box>
+						</Box>
+						<List>
+							<ProjectList workspaceId={workspace.id} />
+						</List>
+						<Divider />
+					</ListItem>
+				);
+			})}
 		</List>
 	);
 }

@@ -16,6 +16,13 @@ export const useStyles = makeStyles((theme: Theme) =>
 			background: theme.palette.background.paper,
 			overflow: "scroll",
 		},
+		sidePanelLoader: {
+			height: "100vh",
+			background: theme.palette.background.paper,
+			display: "flex",
+			justifyContent: "center",
+			alignItems: "center",
+		},
 		card: {
 			boxShadow: "none",
 			margin: theme.spacing(0, 2),

@@ -1,5 +1,13 @@
 import React from "react";
-import { Box, Typography, Divider, List, MenuItem } from "@material-ui/core";
+import {
+	Box,
+	Typography,
+	Divider,
+	List,
+	CircularProgress,
+	MenuItem,
+	Menu,
+} from "@material-ui/core";
 import { useStyles } from "../styles";
 import { useQuery } from "@apollo/client";
 import { GET_ORGANISATIONS } from "../../../graphql/queries";
@@ -7,13 +15,27 @@ import MoreVertOutlinedIcon from "@material-ui/icons/MoreVertOutlined";
 import IconButton from "@material-ui/core/IconButton";
 import WorkspaceList from "./WorkspaceList/WorkspaceList";
 import SimpleMenu from "../../Menu/Menu";
-import LinearProgress from "@material-ui/core/LinearProgress";
+import {
+	useDashboard,
+	useDashBoardData,
+	useDashboardDispatch,
+} from "../../../contexts/dashboardContext";
+import { setOrganisation } from "../../../reducers/dashboardReducer";
 
-export default function SideBar({ children }: { children: Function }) {
+export default function SideBar({ children }: { children?: Function }) {
 	const classes = useStyles();
+
 	const { loading, error, data } = useQuery(GET_ORGANISATIONS);
+	const dispatch = useDashboardDispatch();
+	const dashboardData = useDashBoardData();
+
 	React.useEffect(() => {
-		if (data) console.log(data);
+		if (data) {
+			const { organisationList } = data;
+			if (organisationList) {
+				dispatch(setOrganisation(organisationList[0]));
+			}
+		}
 	}, [data]);
 
 	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -25,26 +47,27 @@ export default function SideBar({ children }: { children: Function }) {
 	const handleClose = () => {
 		setAnchorEl(null);
 	};
+
 	const menuList = [
-		{ children: <MenuItem>Edit Orgnisation</MenuItem> },
+		{ children: <MenuItem>Edit Organisation</MenuItem> },
 		{ children: <MenuItem>Add Workspace</MenuItem> },
 	];
-	return (
-		<Box className={classes.sidePanel} mr={1} p={0} boxShadow={1}>
-			{loading ? (
-				<Box mt={6}>
-					<LinearProgress style={{ marginBottom: "3px" }} />
-					<LinearProgress color="secondary" />
-				</Box>
-			) : (
-				<div>
+
+	if (!dashboardData) {
+		return (
+			<Box className={classes.sidePanelLoader} mr={1} p={0} boxShadow={1}>
+				<CircularProgress />
+			</Box>
+		);
+	} else
+		return (
+			<Box className={classes.sidePanel} mr={1} p={0} boxShadow={1}>
+				<>
 					<Box display="flex" m={2}>
 						<Box flexGrow={1} ml={1}>
-							{
-								<Typography color="primary" gutterBottom variant="h6">
-									{data.organisationList[0].name}
-								</Typography>
-							}
+							<Typography color="primary" gutterBottom variant="h6">
+								{dashboardData?.organisation?.name}
+							</Typography>
 						</Box>
 						<Box>
 							<IconButton
@@ -65,13 +88,8 @@ export default function SideBar({ children }: { children: Function }) {
 						</Box>
 					</Box>
 					<Divider />
-
-					{data && data.organisationList[0].id && (
-						<WorkspaceList organisation={data.organisationList[0].id} />
-					)}
-					<List></List>
-				</div>
-			)}
-		</Box>
-	);
+					<WorkspaceList />
+				</>
+			</Box>
+		);
 }

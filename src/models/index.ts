@@ -1,3 +1,5 @@
+import { IProject } from "./project/project";
+
 export interface ISignUpStep {
 	label: string;
 	id: string;
@@ -14,11 +16,21 @@ export interface IUserSignUp {
 
 export interface IOrganisation {
 	orgName: string;
+	name?: string;
 	streetAdd: string;
 	city: string;
 	state: string;
 	country: string;
 	zipCode: number | null;
+}
+
+export interface IWorkSpace {
+	id: string;
+	name: string;
+	organisation: {
+		name: string;
+		id: string;
+	};
 }
 
 export interface IBasicInformation {
@@ -33,6 +45,12 @@ export interface IBasicInformation {
 		description?: string;
 		type?: string;
 	};
+}
+
+export interface IDashboardDataContext {
+	project?: IProject;
+	organisation?: IOrganisation;
+	workspace?: any;
 }
 
 export interface ILoginForm {

@@ -22,7 +22,7 @@ export default function Impact() {
 		<Box className={classes.root}>
 			{impacts.map((impact, index) => {
 				return (
-					<Typography variant="subtitle1" gutterBottom>
+					<Typography key={index} variant="subtitle1" gutterBottom>
 						{`#${index + 1} ${impact}`}
 					</Typography>
 				);
